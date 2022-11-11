@@ -116,9 +116,9 @@ if toLocal:
         exit (1)
         debug ("Will save to " + str(savelocation))
 
-trimstart = int(getSetting(name.upper(),"trimstart"))
+# trimstart = int(getSetting(name.upper(),"trimstart"))
 recordatleast = duration
-reduceby = trimstart #seconds to slice off the beginning
+# reduceby = trimstart #seconds to slice off the beginning
 
 now = datetime.datetime.now()
 end = now + datetime.timedelta(seconds=recordatleast)
