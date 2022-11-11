@@ -87,10 +87,10 @@ if stream=="":
     debug ("Cannot determine stream url. Set the stream parameter in the settings file. Goodbye")
     exit (1)
 if toOwncloud:
-    ocuser = getSetting("OWNCLOUD", "user")
-    ocpass = getSetting("OWNCLOUD", "password")
-    ocurl = getSetting("OWNCLOUD", "url")
-    ocbasedir = getSetting("OWNCLOUD", "ocbasedir")
+    ocuser = getSetting(name.upper(), "user")
+    ocpass = getSetting(name.upper(), "password")
+    ocurl = getSetting(name.upper(), "url")
+    ocbasedir = getSetting(name.upper(), "ocbasedir")
     if ocuser == "" or ocpass=="" or ocurl == "":
         debug ("You want to upload to owncloud but owncloud settings in the config file are incomplete")
         debug ("Set the user, password, url and ocbasedir key/values")
@@ -108,10 +108,10 @@ if toPodcast:
         debug ("Set the user, password, server, podcastpath and podcastrefreshurl key/values")
         debug ("Good bye")
 if toLocal:
-    savelocation = getSetting("DEFAULT", "saveto")
+    savelocation = getSetting(name.upper(), "saveto")
     if savelocation=="":
         debug ("You want to save the file to local/mounted filesystems but settings in the config file are incomplete")
-        debug ("Please set the savelocation key/value under the DEFAULT section")
+        debug ("Please set the savelocation key/value under the "+name+" section")
         debug ("Good bye")
         exit (1)
         debug ("Will save to " + str(savelocation))
