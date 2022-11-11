@@ -13,7 +13,7 @@ import ffmpy3
 
 def getSetting(section, setting):
     config = configparser.ConfigParser()
-    config.read('settings.cfg')
+    config.read('/settings.cfg')
     if section not in config.sections():
        # print("Section " + section + " not found. Will try DEFAULT")
         section = "DEFAULT"
