@@ -33,10 +33,11 @@ duration = -1
 toOwncloud = False
 toPodcast = False
 toLocal = False
+toSSH = False
 
 if len (sys.argv) <2:
     debug  ("You have not passed enough arguments")
-    debug ("Usage: pyRecord name=NAME duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal]")
+    debug ("Usage: pyRecord name=NAME duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal] [toSSH]")
 
     exit (1)
 for param in sys.argv:
@@ -50,7 +51,7 @@ for param in sys.argv:
             duration = int(str(param).lower().strip("duration="))
         except:
             debug ("Duration must be a number, eg duration=3660")
-            debug ("Usage: pyRecord [name=NAME] duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal]")
+            debug ("Usage: pyRecord [name=NAME] duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal] [toSSH]")
             exit(1)
     if "toowncloud" in str(param).lower():
         #print("Will upload to ouwncloud")
@@ -61,16 +62,25 @@ for param in sys.argv:
     if "tolocal" in str(param).lower():
         #print("Will upload to podcast")
         toLocal = True
+    if "toSSH" in str(param).lower():
+        #print("Will upload via SSH")
+        toSSH = True
+
 if name=="":
     debug ("You must specify a name, e.g. name=myShow")
-    debug ("Usage: pyRecord [name=NAME] duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal]")
+    debug ("Usage: pyRecord [name=NAME] duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal] [toSSH]")
     exit(1)
 
 if duration <=0 :
     debug ("I do need the duration of the clip you want me to record. Don't make me guess ...")
-    debug ("Usage: pyRecord name=NAME duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal]")
+    debug ("Usage: pyRecord name=NAME duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal] [toSSH]")
     exit (1)
 
+if toPodcast:
+    if  not (toLocal or toSSH):
+        debug ("You want to upload this to a podcas generator, but have not set toLocal or toSSH")
+        debug ("Usage: pyRecord name=NAME duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal] [toSSH]")
+        exit (1)
 stream = ""
 ocuser= ""
 ocpass = ""
@@ -188,7 +198,7 @@ if toOwncloud:
         debug ("Error ="  + e)
         debug ("Could not upload file. Go figure ...")
 
-if toPodcast:
+if toSSH:
     debug ("Uploading file to podcast")
     
     #sftp = pysftp.Connection(username=sshuser, private_key=sshkeyfile)
@@ -217,19 +227,8 @@ if toPodcast:
     debug("Will put " + filename + " to " + sshpath+filename)
     sftp.put(filename, sshpath + filename)
     sftp.close()
-    ssh.close()
+    ssh.close() 
 
-    debug ("Waiting 40 seconds (for mtime compatibility) and refreshing Podcasts by hitting "+ podcastrefreshurl)
-    sleep(40)
-    try:
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        contents = urllib.request.urlopen(podcastrefreshurl, context=ctx).read()
-    except Exception as e:
-        debug ("There was an error forcing the podcast generator to refresh. Is the URL Correc?")
-        debug (str(e))
-    
 if toLocal:
     debug ("Saving to local location")
     debug ("will make dir " + savelocation + targetdir)
@@ -243,6 +242,19 @@ if toLocal:
     except Exception as e:
         debug ("Error =" + str(e))
         debug ("Could not copy file")
+
+if toPodcast:
+    debug ("Waiting 40 seconds (for mtime compatibility) and refreshing Podcasts by hitting "+ podcastrefreshurl)
+    sleep(40)
+    try:
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        contents = urllib.request.urlopen(podcastrefreshurl, context=ctx).read()
+    except Exception as e:
+        debug ("There was an error forcing the podcast generator to refresh. Is the URL Correc?")
+        debug (str(e))
+   
 debug ("Deleting local files")
 
 os.remove(filename)
