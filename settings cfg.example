@@ -1,0 +1,13 @@
+[FC]
+sshserver = sshhost.domain.com
+sshuser = myname
+sshkeyfile = path_to_openssh_file
+sshpassword = ssh_password_if_not_using_key
+sshpath = path_to_upload_audio_file_for_podcast_generator
+podcastrefreshurl = url_to_force_pofdacstgenerator_refresh
+stream = http://sportfm.live24.gr/sportfm7712
+saveto = path_to_save_files_localy
+ocurl = full_url_for_nextloud
+ocpass = next_cloud_username
+ocuser = nextcloud_password
+ocbasedir = dir_inside_next_cloud_where_the_file_will_go_and_create_structure_tree

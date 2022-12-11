@@ -10,18 +10,20 @@ import configparser
 import sys
 import shutil
 import ffmpy3
+import ssl
 
 def getSetting(section, setting):
     config = configparser.ConfigParser()
-    config.read('/settings.cfg')
-    if section not in config.sections():
-       # print("Section " + section + " not found. Will try DEFAULT")
-        section = "DEFAULT"
+    try:
+        config.read('settings.cfg')
+    except Exception as e:
+        debug("Cannot read settings.cfg")
+    #section = "DEFAULT"
     try:
         #print ("Setting " + setting + " to " + config[section][setting])
         return config[section][setting]
     except:
-        print ("Key " + setting + " not found in section "+ section)
+        print ("Key " + setting + " not found in section "+ section + ".")
 
 def debug(message):
     print (str(datetime.datetime.now()) + " --::-- " + str(message))
@@ -74,22 +76,24 @@ ocuser= ""
 ocpass = ""
 ocurl = ""
 ocbasedir = ""
+oclocation = ""
 sshuser = ""
 sshpass = ""
 sshserver = ""
+sshkeyfile =""
 sshpath = ""
 podcastrefreshurl=""
 trimstart = 0
 savelocation = ""
 
 stream = getSetting(name.upper(),"stream")
-if stream=="":
+if stream=="" or stream==None:
     debug ("Cannot determine stream url. Set the stream parameter in the settings file. Goodbye")
     exit (1)
 if toOwncloud:
-    ocuser = getSetting(name.upper(), "user")
-    ocpass = getSetting(name.upper(), "password")
-    ocurl = getSetting(name.upper(), "url")
+    ocuser = getSetting(name.upper(), "ocuser")
+    ocpass = getSetting(name.upper(), "ocpass")
+    ocurl = getSetting(name.upper(), "ocurl")
     ocbasedir = getSetting(name.upper(), "ocbasedir")
     if ocuser == "" or ocpass=="" or ocurl == "":
         debug ("You want to upload to owncloud but owncloud settings in the config file are incomplete")
@@ -98,14 +102,15 @@ if toOwncloud:
         exit (1)
 
 if toPodcast:
-    sshuser = getSetting(name.upper(),"user")
-    sshpass = getSetting(name.upper(),"password")
-    sshserver = getSetting(name.upper(),"server")
-    sshpath = getSetting(name.upper(),"podcastpath")
+    sshuser = getSetting(name.upper(),"sshuser")
+    sshpass = getSetting(name.upper(),"sshpassword")
+    sshkeyfile = getSetting(name.upper(),"sshkeyfile")
+    sshserver = getSetting(name.upper(),"sshserver")
+    sshpath = getSetting(name.upper(),"sshpath")
     podcastrefreshurl = getSetting(name.upper(), "podcastrefreshurl")
-    if sshuser=="" or sshpass=="" or sshserver=="" or podcastrefreshurl=="":
+    if sshuser=="" or (sshpass=="" and sshkeyfile=="")or sshserver=="" or podcastrefreshurl=="":
         debug ("You want to upload to podcast generator but settings in the config file are incomplete")
-        debug ("Set the user, password, server, podcastpath and podcastrefreshurl key/values")
+        debug ("Set the user, password (or key file), server, podcastpath and podcastrefreshurl key/values")
         debug ("Good bye")
 if toLocal:
     savelocation = getSetting(name.upper(), "saveto")
@@ -129,22 +134,24 @@ today = today +"-"+ now.strftime('%a')
 streamName = name
 filename = streamName + today + ".mp3"
 targetdir = "/" + streamName +"/" + str(now.year) + "/" + str(now.month) + " - " + str(now.strftime("%b"))
+oclocation = ocbasedir+ targetdir + "/"
 debug ("Starting at " + str(now))
 debug ("Will stop at " + str(end))
 #parameters = "sout=#transcode{acodec=mp4a,channels=2,ab=64,samplerate=44100}:duplicate{dst=std{access=file,mux=mp4,dst='"+filename+"'"
 #caching_parameters ="--network-caching=5000"
 #reconnect_parameters = "--http-reconnect"
 #quiet_parameters = "--quiet"
-oclocation = ocbasedir+ targetdir + "/"
 #instance = vlc.Instance()
 #player = instance.media_player_new()
 #media = instance.media_new(stream, parameters, caching_parameters, reconnect_parameters, quiet_parameters)
 #media.get_mrl()
 #player.set_media(media)
+
 title = filename.replace(".mp3", "")
 artist = streamName
 genre = "radio"
 album = streamName
+debug(stream)
 try:
     debug ("Recording from " + stream + " for " + str(recordatleast))
     #ff = ffmpy3.FFmpeg(inputs={stream: None}, outputs={filename: '-y -acodec copy -t ' + str("recordatleast") + ' -metadata title=' + str(title) + ' -metadata artist=' +  str(artist) + ' -metadata genre=' + str(genre) + ' -metadata album=' + str(album)})
@@ -162,7 +169,10 @@ except Exception as e:
 if toOwncloud:
     debug ("Uploading to OwnCloud")
     oc = owncloud.Client(ocurl)
-    oc.login(ocuser, ocpass)
+    try:
+        oc.login(ocuser, ocpass)
+    except Exception as e:
+        debug ("Cannot login as + ocuser + " and + ocpass + " at " + ocurl)
     dirs = oclocation.split("/")
     dirtocreate = ""
     for x in dirs:
@@ -180,16 +190,46 @@ if toOwncloud:
 
 if toPodcast:
     debug ("Uploading file to podcast")
+    
+    #sftp = pysftp.Connection(username=sshuser, private_key=sshkeyfile)
+    #sftp.put(filename,sshpath + filename)
     ssh = paramiko.SSHClient()
+    ssh.load_system_host_keys()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(sshserver, username=sshuser, password=sshpass)
+    if sshkeyfile!="":
+        debug ("Connecting via SSH and keyfile")
+        try:
+            ssh.connect(sshserver, username=sshuser, password=sshpass, key_filename=sshkeyfile)
+            #sftp = pysftp.Connection(host=sshserver ,username=sshuser, private_key=sshkeyfile)
+        except Exception as e:
+            debug ("Could not connect via key_file to " + sshserver + " using key file as user " + sshuser)
+            debug ("Error = " + str(e))
+            exit(1)
+    else:
+        try:
+            ssh.connect(sshserver, username=sshuser, password=sshpass)
+        except Exception as e:
+            debug ("Could not connect via password to " + sshserver + " using password as user " + sshuser)
+            debug ("Error = " + str(e))
+            exit(1)
+    
     sftp = ssh.open_sftp()
+    debug("Will put " + filename + " to " + sshpath+filename)
     sftp.put(filename, sshpath + filename)
     sftp.close()
     ssh.close()
 
-    debug ("Refreshing Podcasts")
-    contents = urllib.request.urlopen(podcastrefreshurl).read()
+    debug ("Waiting 40 seconds (for mtime compatibility) and refreshing Podcasts by hitting "+ podcastrefreshurl)
+    sleep(40)
+    try:
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        contents = urllib.request.urlopen(podcastrefreshurl, context=ctx).read()
+    except Exception as e:
+        debug ("There was an error forcing the podcast generator to refresh. Is the URL Correc?")
+        debug (str(e))
+    
 if toLocal:
     debug ("Saving to local location")
     debug ("will make dir " + savelocation + targetdir)
