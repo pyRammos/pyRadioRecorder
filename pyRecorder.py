@@ -38,6 +38,7 @@ toLocal = False
 toSSH = False
 
 logging.basicConfig(filename= "recorder.txt", level=logging.DEBUG,format="%(asctime)s %(message)s")
+debug ("============ New Start ============")
 
 
 if len (sys.argv) <2:
