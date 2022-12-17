@@ -11,6 +11,7 @@ import sys
 import shutil
 import ffmpy3
 import ssl
+import logging
 
 def getSetting(section, setting):
     config = configparser.ConfigParser()
@@ -27,6 +28,7 @@ def getSetting(section, setting):
 
 def debug(message):
     print (str(datetime.datetime.now()) + " --::-- " + str(message))
+    logging.debug(str(message))
 
 name = ""
 duration = -1
@@ -34,6 +36,9 @@ toOwncloud = False
 toPodcast = False
 toLocal = False
 toSSH = False
+
+logging.basicConfig(filename= "recorder.txt", level=logging.DEBUG,format="%(asctime)s %(message)s")
+
 
 if len (sys.argv) <2:
     debug  ("You have not passed enough arguments")
@@ -147,15 +152,6 @@ targetdir = "/" + streamName +"/" + str(now.year) + "/" + str(now.month) + " - "
 oclocation = ocbasedir+ targetdir + "/"
 debug ("Starting at " + str(now))
 debug ("Will stop at " + str(end))
-#parameters = "sout=#transcode{acodec=mp4a,channels=2,ab=64,samplerate=44100}:duplicate{dst=std{access=file,mux=mp4,dst='"+filename+"'"
-#caching_parameters ="--network-caching=5000"
-#reconnect_parameters = "--http-reconnect"
-#quiet_parameters = "--quiet"
-#instance = vlc.Instance()
-#player = instance.media_player_new()
-#media = instance.media_new(stream, parameters, caching_parameters, reconnect_parameters, quiet_parameters)
-#media.get_mrl()
-#player.set_media(media)
 
 title = filename.replace(".mp3", "")
 artist = streamName
@@ -231,6 +227,8 @@ if toSSH:
 
 if toLocal:
     debug ("Saving to local location")
+    if savelocation[-1] =="/":
+        savelocation = savelocation[:-1]
     debug ("will make dir " + savelocation + targetdir)
     try:
         os.makedirs(savelocation + targetdir)
@@ -238,7 +236,8 @@ if toLocal:
         debug("Error: " + str(e))
         debug ("Could not create local dir, possibly because it exists")
     try:
-        shutil.copyfile (filename, savelocation + targetdir+"/"+filename)
+        debug ("Making local transfet to" + savelocation + targetdir+ "/" +filename)
+        shutil.copyfile (filename, savelocation + targetdir+ "/" +filename)
     except Exception as e:
         debug ("Error =" + str(e))
         debug ("Could not copy file")
