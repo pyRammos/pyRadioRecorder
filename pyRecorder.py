@@ -36,6 +36,7 @@ toOwncloud = False
 toPodcast = False
 toLocal = False
 toSSH = False
+toLocalFlat = False
 
 logging.basicConfig(filename= "recorder.txt", level=logging.DEBUG,format="%(asctime)s %(message)s")
 debug ("============ New Start ============")
@@ -43,7 +44,7 @@ debug ("============ New Start ============")
 
 if len (sys.argv) <2:
     debug  ("You have not passed enough arguments")
-    debug ("Usage: pyRecord name=NAME duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal] [toSSH]")
+    debug ("Usage: pyRecord name=NAME duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal] [toLocalFlat] [toSSH]")
 
     exit (1)
 for param in sys.argv:
@@ -57,35 +58,37 @@ for param in sys.argv:
             duration = int(str(param).lower().strip("duration="))
         except:
             debug ("Duration must be a number, eg duration=3660")
-            debug ("Usage: pyRecord [name=NAME] duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal] [toSSH]")
+            debug ("Usage: pyRecord [name=NAME] duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal] [toLocalFlat] [toSSH]")
             exit(1)
     if "toowncloud" in str(param).lower():
-        #print("Will upload to ouwncloud")
+        debug("Will upload to ouwncloud")
         toOwncloud=True
     if "topodcast" in str(param).lower():
-        #print("Will upload to podcast")
+        debug("Will upload to podcast")
         toPodcast = True
     if "tolocal" in str(param).lower():
-        #print("Will upload to podcast")
+        debug("Will save locally (with folder structure)")
         toLocal = True
-    if "toSSH" in str(param).lower():
-        #print("Will upload via SSH")
+    if "tossh" in str(param).lower():
+        debug("Will upload via SSH")
         toSSH = True
-
+    if "tolocalflat" in str(param).lower():
+        debug("Will save locally without folder structure")
+        toLocalFlat = True
 if name=="":
     debug ("You must specify a name, e.g. name=myShow")
-    debug ("Usage: pyRecord [name=NAME] duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal] [toSSH]")
+    debug ("Usage: pyRecord [name=NAME] duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal] [toLocalFlat] [toSSH]")
     exit(1)
 
 if duration <=0 :
     debug ("I do need the duration of the clip you want me to record. Don't make me guess ...")
-    debug ("Usage: pyRecord name=NAME duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal] [toSSH]")
+    debug ("Usage: pyRecord name=NAME duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal] [toLocalFlat] [toSSH]")
     exit (1)
 
 if toPodcast:
     if  not (toLocal or toSSH):
         debug ("You want to upload this to a podcas generator, but have not set toLocal or toSSH")
-        debug ("Usage: pyRecord name=NAME duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal] [toSSH]")
+        debug ("Usage: pyRecord name=NAME duration=DURATION_IN_SECONDS [toOwncloud] [toPodcast] [toLocal] [toLocalFlat] [toSSH]")
         exit (1)
 stream = ""
 ocuser= ""
@@ -101,6 +104,7 @@ sshpath = ""
 podcastrefreshurl=""
 trimstart = 0
 savelocation = ""
+saveToFlat=""
 
 stream = getSetting(name.upper(),"stream")
 if stream=="" or stream==None:
@@ -133,6 +137,15 @@ if toLocal:
     if savelocation=="":
         debug ("You want to save the file to local/mounted filesystems but settings in the config file are incomplete")
         debug ("Please set the savelocation key/value under the "+name+" section")
+        debug ("Good bye")
+        exit (1)
+        debug ("Will save to " + str(savelocation))
+
+if toLocalFlat:
+    saveToFlat = getSetting(name.upper(), "savetoflat")
+    if saveToFlat=="":
+        debug ("You want to save the file to local/mounted filesystems but settings in the config file are incomplete")
+        debug ("Please set the savetoflat key/value under the "+name+" section")
         debug ("Good bye")
         exit (1)
         debug ("Will save to " + str(savelocation))
@@ -243,9 +256,24 @@ if toLocal:
         debug ("Error =" + str(e))
         debug ("Could not copy file")
 
+if toLocalFlat:
+    debug ("Saving to local location (without Folder Structure)")
+    if  saveToFlat[-1] =="/":
+        savelocation = saveToFlat[:-1]
+    #debug ("will make dir " + savelocation + targetdir)
+    #try:
+    #    os.makedirs(savelocation + targetdir)
+    #except Exception as e:
+        #debug("Error: " + str(e))
+        #debug ("Could not create local dir, possibly because it exists")
+    try:
+        debug ("Making local transfet to" + savelocation + "/" +filename)
+        shutil.copyfile (filename, savelocation + "/" +filename)
+    except Exception as e:
+        debug ("Error =" + str(e))
+        debug ("Could not copy file")
+
 if toPodcast:
-    debug ("Waiting 40 seconds (for mtime compatibility) and refreshing Podcasts by hitting "+ podcastrefreshurl)
-    sleep(40)
     try:
         ctx = ssl.create_default_context()
         ctx.check_hostname = False

@@ -20,3 +20,57 @@
 2022-12-17 12:35:28,473 Could not create local dir, possibly because it exists
 2022-12-17 12:35:28,473 Making local transfet to/tmp/FC/2022/12 - Dec/FC221217-Sat.mp3
 2022-12-17 12:35:28,474 Deleting local files
+2022-12-30 01:13:05,791 ============ New Start ============
+2022-12-30 01:13:05,794 Starting at 2022-12-30 01:13:05.793930
+2022-12-30 01:13:05,794 Will stop at 2022-12-30 01:14:05.793930
+2022-12-30 01:13:05,794 http://sportfm.live24.gr/sportfm7712
+2022-12-30 01:13:05,794 Recording from http://sportfm.live24.gr/sportfm7712 for 60
+2022-12-30 01:13:05,795 Command = ffmpeg -i http://sportfm.live24.gr/sportfm7712 -y -acodec copy -t 60 -metadata title=FC221230-Fri.mp3 -metadata artist=FC -metadata genre=radio -metadata album=FC FC221230-Fri.mp3
+2022-12-30 01:13:57,363 Saving to local location
+2022-12-30 01:13:57,363 will make dir /tmp/FC/2022/12 - Dec
+2022-12-30 01:13:57,364 Making local transfet to/tmp/FC/2022/12 - Dec/FC221230-Fri.mp3
+2022-12-30 01:13:57,367 Deleting local files
+2022-12-30 01:16:37,386 ============ New Start ============
+2022-12-30 01:16:37,387 Starting at 2022-12-30 01:16:37.387329
+2022-12-30 01:16:37,387 Will stop at 2022-12-30 01:16:52.387329
+2022-12-30 01:16:37,387 http://sportfm.live24.gr/sportfm7712
+2022-12-30 01:16:37,387 Recording from http://sportfm.live24.gr/sportfm7712 for 15
+2022-12-30 01:16:37,387 Command = ffmpeg -i http://sportfm.live24.gr/sportfm7712 -y -acodec copy -t 15 -metadata title=FC221230-Fri.mp3 -metadata artist=FC -metadata genre=radio -metadata album=FC FC221230-Fri.mp3
+2022-12-30 01:16:43,492 Saving to local location
+2022-12-30 01:16:43,493 will make dir /tmp/FC/2022/12 - Dec
+2022-12-30 01:16:43,493 Error: [Errno 17] File exists: '/tmp/FC/2022/12 - Dec'
+2022-12-30 01:16:43,493 Could not create local dir, possibly because it exists
+2022-12-30 01:16:43,493 Making local transfet to/tmp/FC/2022/12 - Dec/FC221230-Fri.mp3
+2022-12-30 01:16:43,494 Deleting local files
+2022-12-30 01:17:53,824 ============ New Start ============
+2022-12-30 01:17:53,824 Will upload to podcast
+2022-12-30 01:17:53,824 Will upload to podcast
+2022-12-30 01:17:53,824 Will save locally without folder structure
+2022-12-30 01:17:53,825 Starting at 2022-12-30 01:17:53.825492
+2022-12-30 01:17:53,825 Will stop at 2022-12-30 01:18:08.825492
+2022-12-30 01:17:53,825 http://sportfm.live24.gr/sportfm7712
+2022-12-30 01:17:53,825 Recording from http://sportfm.live24.gr/sportfm7712 for 15
+2022-12-30 01:17:53,826 Command = ffmpeg -i http://sportfm.live24.gr/sportfm7712 -y -acodec copy -t 15 -metadata title=FC221230-Fri.mp3 -metadata artist=FC -metadata genre=radio -metadata album=FC FC221230-Fri.mp3
+2022-12-30 01:17:59,919 Saving to local location
+2022-12-30 01:17:59,919 will make dir /tmp/FC/2022/12 - Dec
+2022-12-30 01:17:59,920 Error: [Errno 17] File exists: '/tmp/FC/2022/12 - Dec'
+2022-12-30 01:17:59,920 Could not create local dir, possibly because it exists
+2022-12-30 01:17:59,920 Making local transfet to/tmp/FC/2022/12 - Dec/FC221230-Fri.mp3
+2022-12-30 01:17:59,921 Saving to local location (without Folder Structure)
+2022-12-30 01:21:31,223 ============ New Start ============
+2022-12-30 01:21:31,223 Will save locally (with folder structure)
+2022-12-30 01:21:31,223 Will save locally (with folder structure)
+2022-12-30 01:21:31,223 Will save locally without folder structure
+2022-12-30 01:21:31,224 Starting at 2022-12-30 01:21:31.224061
+2022-12-30 01:21:31,224 Will stop at 2022-12-30 01:21:46.224061
+2022-12-30 01:21:31,224 http://sportfm.live24.gr/sportfm7712
+2022-12-30 01:21:31,224 Recording from http://sportfm.live24.gr/sportfm7712 for 15
+2022-12-30 01:21:31,224 Command = ffmpeg -i http://sportfm.live24.gr/sportfm7712 -y -acodec copy -t 15 -metadata title=FC221230-Fri.mp3 -metadata artist=FC -metadata genre=radio -metadata album=FC FC221230-Fri.mp3
+2022-12-30 01:21:37,154 Saving to local location
+2022-12-30 01:21:37,155 will make dir /tmp/FC/2022/12 - Dec
+2022-12-30 01:21:37,155 Error: [Errno 17] File exists: '/tmp/FC/2022/12 - Dec'
+2022-12-30 01:21:37,155 Could not create local dir, possibly because it exists
+2022-12-30 01:21:37,155 Making local transfet to/tmp/FC/2022/12 - Dec/FC221230-Fri.mp3
+2022-12-30 01:21:37,156 Saving to local location (without Folder Structure)
+2022-12-30 01:21:37,157 Making local transfet to/tmp/FC221230-Fri.mp3
+2022-12-30 01:21:37,157 Deleting local files
