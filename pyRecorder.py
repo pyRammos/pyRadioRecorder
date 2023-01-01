@@ -278,6 +278,7 @@ if toPodcast:
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
+        debug ("Will hit " + podcastrefreshurl)
         contents = urllib.request.urlopen(podcastrefreshurl, context=ctx).read()
     except Exception as e:
         debug ("There was an error forcing the podcast generator to refresh. Is the URL Correc?")
