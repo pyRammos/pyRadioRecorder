@@ -299,7 +299,7 @@ if notify:
     except Exception as e:
         debug ("ERROR: Error reading Pushover Token from Settings file")
     try:
-        message = "Recording Completed. Audio file is " + str("{:.2f}".format((os.stat(filename).st_size/(1024*1024)))) + "MB"    
+        message = "Recording Completed. Audio file is " + str("{:.2f}".format((os.stat(filename).st_size/(1000000)))) + "MB"    
         conn = http.client.HTTPSConnection("api.pushover.net:443")
         conn.request("POST", "/1/messages.json",
         urllib.parse.urlencode({
