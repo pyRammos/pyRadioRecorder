@@ -251,3 +251,17 @@ STDERR:
 2023-01-13 13:16:49,217 ERROR: Could not create local dir, possibly because it exists
 2023-01-13 13:16:49,217 INFO: Making local transfer to /tmp/FC/2023/1 - Jan/FC230113-Fri.mp3
 2023-01-13 13:16:50,095 INFO: Deleting local files
+2023-01-19 08:59:01,401 INFO: ============ New Start ============
+2023-01-19 08:59:01,401 INFO: Will save locally (with folder structure)
+2023-01-19 08:59:01,401 INFO: Will notify via Pushover
+2023-01-19 08:59:01,401 INFO: Starting at 2023-01-19 08:59:01.401893
+2023-01-19 08:59:01,401 INFO: Will stop at 2023-01-19 08:59:21.401893
+2023-01-19 08:59:01,401 INFO: http://sportfm.live24.gr/sportfm7712
+2023-01-19 08:59:01,402 INFO: Recording from http://sportfm.live24.gr/sportfm7712 for 20
+2023-01-19 08:59:01,402 INFO: Command = ffmpeg -i http://sportfm.live24.gr/sportfm7712 -y -acodec copy -t 20 -metadata title=FC230119-Thu.mp3 -metadata artist=FC -metadata genre=radio -metadata album=FC -loglevel quiet FC230119-Thu.mp3
+2023-01-19 08:59:13,747 INFO: Saving to local location
+2023-01-19 08:59:13,748 INFO: Will make dir /tmp/FC/2023/1 - Jan
+2023-01-19 08:59:13,748 ERROR: [Errno 17] File exists: '/tmp/FC/2023/1 - Jan'
+2023-01-19 08:59:13,748 ERROR: Could not create local dir, possibly because it exists
+2023-01-19 08:59:13,748 INFO: Making local transfer to /tmp/FC/2023/1 - Jan/FC230119-Thu.mp3
+2023-01-19 08:59:14,030 INFO: Deleting local files
