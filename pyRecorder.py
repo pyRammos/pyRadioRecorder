@@ -201,10 +201,10 @@ except Exception as e:
 if toOwncloud:
     debug ("INFO: Uploading to OwnCloud")
     try:
-	debug ("Making connections ...")
-	oc = owncloud.Client(ocurl)
+        debug ("Making connections ...")
+        oc = owncloud.Client(ocurl)
     except:
-	debut ("Could not connect to Owncloud")
+        debug ("Could not connect to Owncloud")
     try:
         oc.login(ocuser, ocpass)
     except Exception as e:
