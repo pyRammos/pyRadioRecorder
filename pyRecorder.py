@@ -276,10 +276,10 @@ if toLocal:
 if toLocalFlat:
     debug ("INFO: Saving to local location (without Folder Structure)")
     if  saveToFlat[-1] =="/":
-        savelocation = saveToFlat[:-1]
+        saveToFlat = saveToFlat[:-1]
     try:
-        debug ("INFO: Making local transfer to " + savelocation + "/" +filename)
-        shutil.copyfile (filename, savelocation + "/" +filename)
+        debug ("INFO: Making local transfer to " + saveToFlat + "/" +filename)
+        shutil.copyfile (filename, saveToFlat + "/" +filename)
     except Exception as e:
         debug ("ERROR:=" + str(e))
         debug ("ERROR: Could not copy file")
