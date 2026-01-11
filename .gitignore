@@ -1,3 +1,15 @@
 settings.cfg
 recorder.txt
+recorder.log
 ffmpeg
+
+# Recording directories
+recordings/
+recordings_flat/
+
+# Temporary audio files
+*.mp3
+*.wav
+*.m4a
+*.aac
+*.conf
