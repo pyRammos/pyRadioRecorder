@@ -743,14 +743,13 @@ def main():
         # Check if we have a partial recording to save
         partial_file_saved = False
         try:
-            # Try to determine filename for partial save
-            now = datetime.datetime.now()
-            today = now.isoformat()
-            today = str(today[:10]).replace("-", "")
-            today = today[2:] + "-" + now.strftime('%a')
-            streamName = args.name.replace(" ", "_")
-            filename = streamName + today + ".mp3"
+            # Check if filename exists in scope (it should if recording started)
+            if 'filename' not in locals():
+                logger.warning("Filename not available - exception occurred before recording started")
+                return 1
             
+            # Use the filename variable that was created before recording started
+            # (it's already in scope from the try block above)
             if os.path.exists(filename) and os.path.getsize(filename) > 0:
                 logger.info("Found partial recording (%d bytes), attempting to save to destinations", 
                            os.path.getsize(filename))
