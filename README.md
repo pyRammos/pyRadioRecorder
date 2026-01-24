@@ -1,45 +1,23 @@
 # pyRadioRecorder
-# Internet radio recorder
 
+Internet radio stream recorder with resilient connection handling for scheduled recordings.
 
+## Features
 
+- **Dual recording modes**: Standard FFmpeg vs. Resilient recorder with active monitoring
+- **Multiple destinations**: Local, OwnCloud/Nextcloud, SSH/SFTP, podcast hosting
+- **Robust error handling**: Automatic reconnection with exponential backoff
+- **Segment-based recording**: Records in segments and merges seamlessly
+- **Pushover notifications**: Get notified when recordings complete
+- **Configurable logging**: Debug, info, warning, error levels
+- **Automatic metadata**: Adds show name and date to MP3 files
+- **Cron-friendly**: Designed for scheduled, unattended operation
 
+## Requirements
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-echo "==================================================================="echo "For unreliable streams, use: --use-resilient-recorder"echo ""ls -lh TestShow_*.mp3 2>/dev/null || echo "No test recordings found (check if stream URL is valid)"echo "Compare the two recordings:"echo ""echo "Testing complete!"echo "==================================================================="echo ""python pyRecorder.py "TestShow_Resilient" "$TEST_DURATION" --local-flat --use-resilient-recorder --log-level INFOecho "--- Test 2: Resilient Recorder ---"# Test 2: Resilient recordingecho ""python pyRecorder.py "TestShow_Standard" "$TEST_DURATION" --local-flat --log-level INFOecho "--- Test 1: Standard FFmpeg Recording ---"# Test 1: Standard recordingecho ""echo "  Duration: $TEST_DURATION"echo "  Stream: $TEST_STREAM"echo "Test configuration:"TEST_DURATION="30s"  # Short test durationTEST_STREAM="https://example.com/stream.mp3"# Example test stream (replace with actual stream)echo ""echo "Replace the test stream URL with a real stream for actual testing."echo "This script demonstrates both recording methods."echo ""echo "==================================================================="echo "Radio Recorder Testing Script"echo "==================================================================="
-## Requires
- - ffmpeg libraries
+- Python 3.x
+- FFmpeg libraries
+- Dependencies: `pyocclient`, `paramiko`, `ffmpy3` (see requirements.python3)
  
 ## Recording Methods
 
@@ -62,7 +40,8 @@ python pyRecorder.py "Show Name" 1h30m --local --use-resilient-recorder
 ```
 
 Optional resilient recorder parameters:
-- `--stall-timeout N`: Seconds without file growth before restart (default: 30)
+- `--stall-timeout N`: Seconds without file growth before restart (default: 60)
+- `--max-consecutive-failures N`: Maximum consecutive failures before giving up (default: 10)
 
 ### When to use Resilient Recorder?
 - Streams that frequently drop or stall
@@ -70,24 +49,65 @@ Optional resilient recorder parameters:
 - Critical recordings where maximum coverage is essential
 - When FFmpeg's reconnect alone isn't sufficient
 
+## Installation
+
+1. Clone the repository
+2. Create virtual environment:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.python3
+   ```
+4. Configure settings:
+   ```bash
+   cp "settings cfg.example" settings.cfg
+   # Edit settings.cfg with your stream URLs and destinations
+   ```
+
 ## Usage Examples
 
 ```bash
 # Standard recording
 python pyRecorder.py "Morning Show" 1h30m --local
 
-# Resilient recording with custom stall timeout
-python pyRecorder.py "Evening News" 2h --local --use-resilient-recorder --stall-timeout 45
+# Resilient recording (recommended)
+python pyRecorder.py "Evening News" 2h --local --use-resilient-recorder
 
-# Multiple destinations with resilient recorder
-python pyRecorder.py "SportsFM Live" 3h --owncloud --ssh --podcast --use-resilient-recorder
+# Custom stall timeout and max failures
+python pyRecorder.py "SportsFM Live" 3h --local --use-resilient-recorder --stall-timeout 30 --max-consecutive-failures 15
+
+# Multiple destinations with notifications
+python pyRecorder.py "Talk Show" 90m --owncloud --ssh --podcast --use-resilient-recorder --notify
+
+# Debug mode
+python pyRecorder.py "Test" 5m --local-flat --use-resilient-recorder --log-level DEBUG
 ```
- 
-## Features
 
-- Two recording methods: standard FFmpeg and resilient recorder
-- Multiple destination support (local, OwnCloud/Nextcloud, SSH/SFTP, podcast)
-- Pushover notifications
-- Configurable logging levels
-- Automatic metadata addition
-- Segment-based recording with automatic merge
+## Command-Line Options
+
+- `--local`: Save with folder structure
+- `--local-flat`: Save without folder structure
+- `--owncloud`: Upload to OwnCloud/Nextcloud
+- `--ssh`: Upload via SSH/SFTP
+- `--podcast`: Upload for podcast generation
+- `--notify`: Send Pushover notification on completion
+- `--use-resilient-recorder`: Enable resilient recording mode
+- `--stall-timeout N`: Stall detection timeout in seconds (default: 60)
+- `--max-consecutive-failures N`: Max failures before giving up (default: 10)
+- `--log-level LEVEL`: Set logging level (DEBUG, INFO, WARNING, ERROR)
+- `--ffmpeg-log-level LEVEL`: Set FFmpeg logging level
+
+## Cron Scheduling
+
+For scheduled recordings, add to crontab:
+```bash
+# Record daily show at 10:00 AM for 2 hours
+0 10 * * * cd /path/to/pyRadioRecorder && source venv/bin/activate && python pyRecorder.py "Morning Show" 2h --local --use-resilient-recorder --notify >> /tmp/recorder.log 2>&1
+```
+
+## License
+
+See LICENSE file for details.
