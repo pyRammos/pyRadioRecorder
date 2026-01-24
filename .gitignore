@@ -2,6 +2,9 @@ settings.cfg
 recorder.txt
 recorder.log
 ffmpeg
+test_podcast_refresh.py
+test_recording.sh
+__pycache__/
 
 # Recording directories
 recordings/
