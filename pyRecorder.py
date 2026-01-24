@@ -17,6 +17,13 @@ import subprocess
 import shlex
 from functools import wraps
 
+# Optional: resilient recorder for improved reconnect handling
+try:
+    from resilient_recorder import record_stream_resilient
+    RESILIENT_RECORDER_AVAILABLE = True
+except ImportError:
+    RESILIENT_RECORDER_AVAILABLE = False
+
 class RecordingConfig:
     """Handles configuration loading and validation"""
     
@@ -97,11 +104,15 @@ def handle_errors(operation_name):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            logger = kwargs.get('logger') or args[0] if args else None
+            # Try to find logger in kwargs first, then in args (usually 3rd arg for these functions)
+            logger = kwargs.get('logger')
+            if not logger and len(args) >= 3:
+                logger = args[2]  # logger is typically 3rd argument
+            
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                if logger:
+                if logger and hasattr(logger, 'error'):
                     logger.error("Failed to %s", operation_name, exc_info=True)
                 else:
                     # Fallback to stderr if no logger available
@@ -269,6 +280,20 @@ Examples:
                        default=True,
                        help='Enable FFmpeg reconnect on network errors (default: enabled)')
     
+    parser.add_argument('--use-resilient-recorder',
+                       action='store_true',
+                       help='Use resilient recorder with automatic restart and stall detection')
+    
+    parser.add_argument('--stall-timeout',
+                       type=int,
+                       default=60,
+                       help='Seconds without file growth before restart (resilient recorder only, default: 60)')
+    
+    parser.add_argument('--max-consecutive-failures',
+                       type=int,
+                       default=10,
+                       help='Give up after this many consecutive failures (resilient recorder only, default: 10)')
+    
     parser.add_argument('--disable-reconnect',
                        action='store_true',
                        help='Disable FFmpeg reconnect (for testing network failures)')
@@ -365,31 +390,37 @@ def build_ffmpeg_command(stream, filename, duration, metadata, ffmpeg_log_level,
     return FFmpegCommand(cmd_parts)
 
 def setup_logging(log_level=logging.INFO, console_output=True):
-    """Setup logging with configurable levels and output destinations"""
-    # Create formatter
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    """
+    Setup logging with configurable levels and output destinations.
     
-    # Setup file handler
+    This configures the root logger, which means all module loggers
+    (including resilient_recorder) will inherit this configuration.
+    """
+    # Clear any existing handlers from root logger
+    root_logger = logging.getLogger()
+    root_logger.handlers.clear()
+    
+    # Create formatter
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    
+    # Setup file handler - always logs everything at DEBUG level
     file_handler = logging.FileHandler('recorder.log')
     file_handler.setFormatter(formatter)
-    file_handler.setLevel(logging.DEBUG)  # Always log everything to file
+    file_handler.setLevel(logging.DEBUG)
+    root_logger.addHandler(file_handler)
     
-    # Setup console handler (optional)
-    handlers = [file_handler]
+    # Setup console handler (optional) - respects user's log level
     if console_output:
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(formatter)
         console_handler.setLevel(log_level)
-        handlers.append(console_handler)
+        root_logger.addHandler(console_handler)
     
-    # Configure root logger
-    logging.basicConfig(
-        level=logging.DEBUG,
-        handlers=handlers,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        force=True  # Override any existing configuration
-    )
+    # Set root logger level to DEBUG so all messages are processed
+    # (handlers will filter based on their own levels)
+    root_logger.setLevel(logging.DEBUG)
     
+    # Return a logger for the main module
     return logging.getLogger(__name__)
 
 def show_configuration(args, logger):
@@ -718,8 +749,49 @@ def main():
             'album': streamName
         }
         
-        # Record the audio stream
-        record_audio_stream(config['stream'], filename, args.duration, metadata, args, logger)
+        # Record the audio stream using selected method
+        if args.use_resilient_recorder:
+            if not RESILIENT_RECORDER_AVAILABLE:
+                logger.error("Resilient recorder requested but resilient_recorder.py not found")
+                return 1
+            
+            logger.info("Using resilient recorder with stall timeout: %ds", args.stall_timeout)
+            success = record_stream_resilient(
+                stream_url=config['stream'],
+                duration_seconds=args.duration,
+                output_file=filename,
+                stall_timeout=args.stall_timeout,
+                max_restart_attempts=100,
+                max_consecutive_failures=args.max_consecutive_failures
+            )
+            
+            if not success:
+                raise Exception("Resilient recorder failed to complete recording")
+            
+            # Add metadata to the recorded file (resilient recorder records without metadata)
+            logger.info("Adding metadata to recorded file...")
+            temp_file = filename.replace('.mp3', '_temp.mp3')  # Use .mp3 extension for temp file
+            add_metadata_cmd = [
+                'ffmpeg', '-i', filename,
+                '-metadata', f'title={metadata["title"]}',
+                '-metadata', f'artist={metadata["artist"]}',
+                '-metadata', f'genre={metadata["genre"]}',
+                '-metadata', f'album={metadata["album"]}',
+                '-c', 'copy', '-y', temp_file
+            ]
+            result = subprocess.run(add_metadata_cmd, capture_output=True, text=True)
+            if result.returncode == 0 and os.path.exists(temp_file):
+                os.replace(temp_file, filename)
+                logger.info("Metadata added successfully")
+            else:
+                logger.warning("Failed to add metadata, keeping file without metadata")
+                if result.stderr:
+                    logger.debug("FFmpeg metadata error: %s", result.stderr[:300])
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
+        else:
+            # Use standard FFmpeg recording
+            record_audio_stream(config['stream'], filename, args.duration, metadata, args, logger)
         
         # Process all destinations
         errors = process_destinations(filename, config, destinations, logger)
