@@ -42,7 +42,7 @@ python pyRecorder.py "Show Name" 1h30m --local --use-resilient-recorder
 Add to your crontab:
 ```bash
 # Record daily show at 10:00 AM for 2 hours using resilient recorder
-0 10 * * * cd /home/george/projects/pyRadioRecorder && source venv/bin/activate && python pyRecorder.py "Morning Show" 2h --local --use-resilient-recorder >> /tmp/recorder.log 2>&1
+0 10 * * * cd /path/to/pyRadioRecorder && source venv/bin/activate && python pyRecorder.py "Morning Show" 2h --local --use-resilient-recorder >> /tmp/recorder.log 2>&1
 ```
 
 ## Key Options

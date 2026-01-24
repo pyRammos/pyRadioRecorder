@@ -83,8 +83,11 @@ python pyRecorder.py "Evening News" 2h --local --use-resilient-recorder --stall-
 python pyRecorder.py "SportsFM Live" 3h --owncloud --ssh --podcast --use-resilient-recorder
 ```
  
- ## Todo
+## Features
 
-  - Add flag for debug output to console
-
-This is the next version of the sport-fm recorder. Removed dependencies to VLC and converted all to FFMPEG.
+- Two recording methods: standard FFmpeg and resilient recorder
+- Multiple destination support (local, OwnCloud/Nextcloud, SSH/SFTP, podcast)
+- Pushover notifications
+- Configurable logging levels
+- Automatic metadata addition
+- Segment-based recording with automatic merge
