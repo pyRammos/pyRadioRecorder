@@ -718,10 +718,20 @@ def main():
         'notify': args.notify
     }
     
+    # Human-readable labels for destinations
+    destination_labels = {
+        'owncloud': 'upload to OwnCloud',
+        'podcast': 'generate podcast',
+        'local': 'save locally with folder structure',
+        'local_flat': 'save locally without folder structure',
+        'ssh': 'upload via SSH',
+        'notify': 'send notification when complete'
+    }
+    
     # Log selected destinations
     for dest, enabled in destinations.items():
         if enabled:
-            logger.info("Will %s", dest.replace('_', ' '))
+            logger.info("Will %s", destination_labels.get(dest, dest))
     
     try:
         # Load and validate configuration early
@@ -779,7 +789,7 @@ def main():
                 '-metadata', f'album={metadata["album"]}',
                 '-c', 'copy', '-y', temp_file
             ]
-            result = subprocess.run(add_metadata_cmd, capture_output=True, text=True)
+            result = subprocess.run(add_metadata_cmd, capture_output=True, text=True, errors='replace')
             if result.returncode == 0 and os.path.exists(temp_file):
                 os.replace(temp_file, filename)
                 logger.info("Metadata added successfully")
